@@ -52,6 +52,8 @@ This symbol indicates something to which we want to draw your attention.
 
 == Design
 
+//tag::ArchitectureDiagram[]
+
 [[Design-Architecture]]
 === Architecture
 
@@ -60,6 +62,8 @@ image::ArchitectureDiagram.png[]
 
 The *_Architecture Diagram_* given above explains the high-level design of the App.
 Given below is a quick overview of each component.
+
+//end::ArchitectureDiagram[]
 
 [TIP]
 The `.puml` files used to create diagrams in this document can be found in the link:{repoURL}/tree/master/docs/diagrams[diagrams] folder.
@@ -91,7 +95,10 @@ Each of the four components
 For example, the `Logic` component (see the class diagram given below) defines it's API in the `Logic.java` interface and exposes its functionality using the `LogicManager.java` class.
 
 .Class Diagram of the Logic Component
-image::LogicClassDiagram.png[width = "700", length = "500"]
+image::LogicClassDiagram.png[width = "800", length = "500"]
+
+[NOTE]
+HiddenModel is used to represent the hidden contents of the Model Component.
 
 [discrete]
 ==== How the architecture components interact with each other
@@ -135,21 +142,39 @@ The command execution will only terminate in two scenarios: +
 1.  When the command is successfully executed. +
 2.  When the user enter `quit` and kbd:[enter] to exit the execution.
 
+
+//updated by Teik Jun
+//tag::logicComponent[]
 [[Design-Logic]]
 === Logic component
 
 [[fig-LogicClassDiagram]]
 .Structure of the Logic Component
-image::LogicClassDiagram.png[width = "600" length = "500"]
+image::LogicClassDiagram.png[width = "800" length = "500"]
 
 *API* :
 link:{repoURL}/blob/master/src/main/java/draganddrop/studybuddy/logic/Logic.java[`Logic.java`]
 
-. The `InteractiveCommandPrompt` in `Ui` uses the parsers to parse the user command.
+. After receiving the user input from Ui, `InteractivePrompt` processes the user's input.
+.. If the user input is complicated, `InteractivePrompt` uses `Parser` classes to
+parse the input.
+.. If more information is needed from the user, `InteractivePrompt` signals the `Ui`
+component to prompt the user for more information using the `interact` command.
+Otherwise, if no more information is needed, proceed to the next step.
 . This results in a `Command` object which is executed by the `LogicManager`.
 . The command execution can affect the `Model` (e.g. adding or editing a task).
 . The result of the command execution is encapsulated as a `CommandResult` object which is passed back to the `Ui`.
 . In addition, the `CommandResult` object can also instruct the `Ui` to perform certain actions, such as displaying a help message to the user.
+
+Given below is the Sequence Diagram for interactions within the `Logic` component for the `interact("list")` API call.
+
+image::ListTaskSequenceDiagram.png[width = "700", length = "600", title = "Sequence diagram for list"]
+
+[CAUTION]
+The lifeline for every member should end at the destroy marker (X) but due to a limitation of PlantUML, the lifeline reaches the end of diagram.
+
+//end::logicComponent[]
+
 
 //Given below is the Sequence Diagram for interactions within the `Logic` component for the `execute("delete 1")` API call.
 
@@ -632,7 +657,15 @@ StudyBuddy to keep track of relevant usage statistics of the user.
 
 .. `GeneralStats` keeps track of the user's goal, streak, and other statistics not covered by the other statistics classes
 
-The user can gain or lose Productivity Points in StudyBuddy when certain actions or events are completed. These include:
+The object diagram for the Productivity feature is shown below: +
+
+image::ProductivityObjectDiagram.png[width = 900 title="Productivity object diagram"]
+
+The Productivity feature displays the Producitivity Points of the user, this is recorded in `currentScore`
+and `scoreList` attributes in `ScoreStats` class.
+
+The user can gain or lose Productivity Points in StudyBuddy when certain actions or events are completed.
+These include:
 
 .. Adding a task: _+1_
 
@@ -664,6 +697,8 @@ The data displayed will be automatically updated upon calling any of the followi
 
 * `goal`
 
+* Any command that modifies the task list
+
 ==== Example Use Scenario
 Given below is an example usage scenario and how the
 Productivity feature behaves at each step.
@@ -687,10 +722,6 @@ Step 4: The Productivity Points Tab is displayed to the user
 From here, the user can continue to manage tasks as per Step 5 and 6 above,
 or navigate to other Productivity tabs.
 
-
-
-===== Clicking the Productivity menu item
-image
 
 ==== Design Considerations
 
@@ -725,7 +756,9 @@ this trade-off does not result in any measurable delay.
 
 //end::productivity[]
 
+//tag::mod[]
 === Modules
+(Contributed by Hong Wen)
 The `modules` feature enables users to be able to group and view their tasks according to various modules or subjects.
 Each module is assigned with a unique module code & a name.
 By default, all task created with the `add` command will be be assigned to module code `OO0000O`.
@@ -760,6 +793,13 @@ name and `ModuleCode` on according to user input.
 3. At the last stage, the prompt will construct a `CreateModCommand` for execution.
 It will go through the various layers in Model before returning to the prompt,
 which will then return to the user.
+
+{bl}
+[CAUTION]
+The lifeline for every member should end at the destroy marker (X) but due to a limitation of PlantUML, the lifeline reaches the end of diagram.
+{bl}
+
+//end::mod[]
 
 
 === Logging
@@ -926,18 +966,13 @@ Use case ends.
 *Extensions*
 
 [none]
-* 2a.
-The list is empty.
-+
-Use case ends.
-
-* 3a.
+* 4a.
 The given index is invalid.
 +
 [none]
-** 3a1. Study Buddy shows an error message.
+** 4a1. Study Buddy shows an error message.
 +
-Use case resumes at step 2.
+Use case resumes at step 3.
 
 [discrete]
 === Use case: Filter tasks
@@ -967,7 +1002,7 @@ Use case resumes at step 2.
 
 [none]
 * 3a.
-User chooses to filter by type instead.
+User chooses to filter by type.
 +
 [none]
 ** 4a. Study Buddy provides options to filter by type
@@ -988,13 +1023,10 @@ Use case ends.
 *Extensions*
 
 [none]
-* 2a.
-The list is empty.
-+
-Use case ends.
-
-* 3a.
+* 1a.
 There are no duplicate tasks
+[none]
+** 1a1. Study Buddy shows an empty list
 +
 Use case ends.
 
@@ -1004,7 +1036,7 @@ Use case ends.
 *MSS*
 
 
-1. User notices Due Soon list needs to be updates
+1. User notices Due Soon list needs to be updated
 2. User requests to refresh
 3. Study Buddy refreshes the Due Soon list and status tags
 +
@@ -1016,10 +1048,17 @@ Use case ends.
 * 2a.
 The list is empty.
 +
+[none]
+** 2a1. List remains the same
++
 Use case ends.
 
-* 3a.
+[none]
+* 2b.
 There is nothing to refresh
++
+[none]
+** 2b1. List remains the same
 +
 Use case ends.
 //end::useCasesSouwmyaa[]
