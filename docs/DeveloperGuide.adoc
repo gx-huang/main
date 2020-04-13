@@ -518,6 +518,7 @@ command which can trigger data updating to walk around this problem.
 check the updated charts.
 // end::taskSummary[]
 
+//updated by ge xiang
 //tag::calendar[]
 === Calendar feature
 
@@ -570,6 +571,7 @@ image::CalendarActivityDiagram.png[width = "400", length = "600" title = "Calend
 * The implementation used for CLI involves a static method in MainWindow which might be unsafe, however, it was the best choice given the time constraints.
 //end::calendar[]
 
+//updated by gexiang
 //tag::archive[]
 === Archive feature
 Archive stores selected task away into a separate task list, this command is used when the user has completed a task but still wants to keep track of it.
@@ -781,6 +783,7 @@ The `LogsCenter` class is used to manage the logging levels and logging destinat
 
 Certain properties of the application can be controlled (e.g user prefs file location, logging level) through the configuration file (default: `config.json`).
 
+//updated by ge xiang
 //tag::dataencryption[]
 === [Proposed] Data encryption
 
@@ -1184,6 +1187,8 @@ c
 Application launches successfully but has no data.
 //end::savingData[]
 
+
+//updated by gx-huang
 [appendix]
 == Effort
 
